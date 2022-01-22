@@ -41,7 +41,7 @@ def check_nextcloud(name:str, conf:dict):
 def update_check(conf:dict):
     result = occ("update:check", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'])
 
-    if len(result.split('\n')) > 1:
+    if len(result.split('\n')) > 2:
         updates = "Updates:\n" + "\n".join(map(lambda x: "{0}:{1}".format(*x),re.findall("(\w+)(?:\sto version)?\s([\d+.]+) is available",result)))
         count = result.split('\n')[-2].split(' ')[0]
     else:
