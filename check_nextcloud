@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim: set fileencoding=utf-8:noet
+##  Copyright 2021 sysops.tv ;-)
+##  BSD-2-Clause
+##
+##  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+##
+##  1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+##
+##  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+##
+## THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+## THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+## BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+## GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+VERSION="0.01"
+
+from operator import truediv
+import os
+import re
+import subprocess
+import json
+from sys import stderr
+
+nc_config = {
+    "nextcloud.zmb.rocks": {
+        "nc_php_version": "8.0",
+        "nc_www_user": "www-data",
+        "nc_path": "/var/www/nextcloud"
+        }
+    }
+
+def check_nextcloud(name:str, conf:dict):
+    printout(name,"Status", status(conf))
+    printout(name,"Updates", update_check(conf))
+    
+
+def update_check(conf:dict):
+    result = occ("update:check", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'])
+
+    if len(result.split('\n')) > 1:
+        updates = "Updates:\n" + "\n".join(map(lambda x: "{0}:{1}".format(*x),re.findall("(\w+)(?:\sto version)?\s([\d+.]+) is available",result)))
+        count = result.split('\n')[-2].split(' ')[0]
+    else:
+        updates = result
+        count = 0
+    
+    return f" updates={count};;1 {updates}"
+
+def status(conf:dict):
+    result = json.loads(occ("status", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'], output="json"))
+    if result.get('installed') == False:
+        state = 2
+    elif ('maintenance' in result.keys() and result.get('maintenance') == True) or ('needsDbUpgrade' in result.keys() and result.get('needsDbUpgrade') == True):
+        state = 1
+    else:
+        state = 0
+    return f" status={state};1;2 {', '.join(['{0}: {1}'.format(key, value) for (key, value) in result.items()])}"
+
+def printout(name:str,function:str, result:str):
+    print(f'P "{name} {function}" {result}')
+
+def occ (command:str, nc_www_user:str, nc_path:str, nc_php_version:str="", output:str="", return_stderr:bool=False):
+    cmd = f"sudo --user={nc_www_user} php{nc_php_version} occ {command}"
+    if output != "":
+        cmd = cmd + f" --output {output}"
+    _proc = subprocess.Popen([ cmd ], shell=True, cwd=nc_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stdout, stderr = _proc.communicate()
+    if (stderr):
+        if not return_stderr:
+            print (stderr.decode('utf-8'))
+            os._exit(1)
+    else:
+        return stdout.decode('utf-8')
+
+def occ_check(name:str, conf:dict):
+    
+    try:
+        subprocess.run(["which sudo > /dev/null"], shell=True, check=True)
+    except:
+        print (f'2 "{name}" Dependecy failed: Please install sudo')
+        os._exit(1)
+    
+    try:
+        subprocess.run([f"which php{conf['nc_php_version']} > /dev/null"], shell=True, check=True)
+    except:
+        print (f'2 "{name}" Dependency failed: php{conf["nc_php_version"]} - Please check if php version is configured correctly in /etc/checkmk/nextcloud.conf')
+        return False
+    
+    try:
+        subprocess.run([f"sudo -u {conf['nc_www_user']} php{conf['nc_php_version']} occ --quiet"], cwd=conf['nc_path'], shell=True, check=True)
+    except:
+        print (f'2 "{name}" Dependency failed: Please check if nc_path is configured correctly in /etc/checkmk/nextcloud.conf')
+        return False
+
+    return True
+    
+
+if __name__ == "__main__":
+
+    _config_file = f"/etc/check_mk/nextcloud.conf"
+    CONFIG_KEYS="php_version|webserver_user"
+    if not os.path.exists(_config_file):  ### wenn checkmk aufruf und noch keine config ... default erstellen
+        if not os.path.isdir("/etc/check_mk"):
+            os.mkdir("/etc/check_mk")
+        with open(_config_file,"wt") as _f: ## default config erstellen
+            _f.write(json.dumps(nc_config, indent=4, sort_keys=True))
+        print(f"1 Nextcloud: default config written - please edit config {_config_file}")
+        os._exit(0)
+    
+    try:
+        with open(_config_file,"rt") as file:
+            nc_config = json.loads(file.read())
+    except:
+        print(f"1 Nextcloud: invalid json format - please edit config {_config_file}")
+        os._exit(0)
+    
+    for server in nc_config.keys():
+        if occ_check(server, nc_config[server]):
+            check_nextcloud(server, nc_config[server])
