@@ -61,7 +61,7 @@ def status(conf:dict):
     return f" status={state};1;2 {', '.join(['{0}: {1}'.format(key, value) for (key, value) in result.items()])}"
 
 def printout(name:str,function:str, result:str):
-    print(f'P "{name} {function}" {result}')
+    print(f'P "Nextcloud {name} {function}" {result}')
 
 def occ (command:str, nc_www_user:str, nc_path:str, nc_php_version:str="", output:str="", return_stderr:bool=False):
     cmd = f"sudo --user={nc_www_user} php{nc_php_version} occ {command}"
@@ -109,14 +109,14 @@ if __name__ == "__main__":
             os.mkdir("/etc/check_mk")
         with open(_config_file,"wt") as _f: ## default config erstellen
             _f.write(json.dumps(nc_config, indent=4, sort_keys=True))
-        print(f"1 Nextcloud: default config written - please edit config {_config_file}")
+        print(f"1 Nextcloud - default config written - please edit config {_config_file}")
         os._exit(0)
     
     try:
         with open(_config_file,"rt") as file:
             nc_config = json.loads(file.read())
     except:
-        print(f"1 Nextcloud: invalid json format - please edit config {_config_file}")
+        print(f"1 Nextcloud - invalid json format - please edit config {_config_file}")
         os._exit(0)
     
     for server in nc_config.keys():
