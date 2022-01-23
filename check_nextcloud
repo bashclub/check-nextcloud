@@ -48,7 +48,7 @@ def update_check(conf:dict):
         updates = result
         count = 0
     
-    return f" updates={count};;1 {updates}"
+    return f" updates={count};;1;; {updates}"
 
 def status(conf:dict):
     result = json.loads(occ("status", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'], output="json"))
@@ -58,7 +58,7 @@ def status(conf:dict):
         state = 1
     else:
         state = 0
-    return f" status={state};1;2 {' '.join(['{0}: {1}'.format(key, value) for (key, value) in result.items()])}"
+    return f" status={state};1;2;; {' '.join(['{0}: {1}'.format(key, value) for (key, value) in result.items()])}"
 
 def printout(name:str,function:str, result:str):
     print(f'P "Nextcloud {name} {function}" {result}')
@@ -82,19 +82,19 @@ def occ_check(name:str, conf:dict):
     try:
         subprocess.run(["which sudo > /dev/null"], shell=True, check=True)
     except:
-        print (f'2 "{name}" Dependecy failed: Please install sudo')
+        print (f'2 "{name}" - Dependecy failed: Please install sudo')
         os._exit(1)
     
     try:
         subprocess.run([f"which php{conf['nc_php_version']} > /dev/null"], shell=True, check=True)
     except:
-        print (f'2 "{name}" Dependency failed: php{conf["nc_php_version"]} - Please check if php version is configured correctly in /etc/checkmk/nextcloud.conf')
+        print (f'2 "{name}" - Dependency failed: php{conf["nc_php_version"]} - Please check if php version is configured correctly in /etc/checkmk/nextcloud.conf')
         return False
     
     try:
         subprocess.run([f"sudo -u {conf['nc_www_user']} php{conf['nc_php_version']} occ --quiet"], cwd=conf['nc_path'], shell=True, check=True)
     except:
-        print (f'2 "{name}" Dependency failed: Please check if nc_path is configured correctly in /etc/checkmk/nextcloud.conf')
+        print (f'2 "{name}" - Dependency failed: Please check if nc_path is configured correctly in /etc/checkmk/nextcloud.conf')
         return False
 
     return True
