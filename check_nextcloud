@@ -58,7 +58,7 @@ def status(conf:dict):
         state = 1
     else:
         state = 0
-    return f" status={state};1;2 {', '.join(['{0}: {1}'.format(key, value) for (key, value) in result.items()])}"
+    return f" status={state};1;2 {' '.join(['{0}: {1}'.format(key, value) for (key, value) in result.items()])}"
 
 def printout(name:str,function:str, result:str):
     print(f'P "Nextcloud {name} {function}" {result}')
