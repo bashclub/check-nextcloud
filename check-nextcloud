@@ -78,7 +78,7 @@ def occ (command:str, nc_www_user:str, nc_path:str, nc_php_version:str="", outpu
     if output != "":
         cmd = cmd + f" --output {output}"
     
-    _proc = subprocess.Popen([ cmd ], shell=True, cwd=nc_path if docker_container != None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _proc = subprocess.Popen([ cmd ], shell=True, cwd=nc_path if docker_container  is not None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = _proc.communicate()
     if (stderr):
