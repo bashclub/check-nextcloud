@@ -20,3 +20,19 @@ After running once, the script will create the config file `/etc/check_mk/nextco
 ```
 Please adjust the settings to your needs.
 You can also add multiple instances.
+
+Example config with multiple instances (e.g. on ISPconfig):
+```
+{
+    "nextcloud.zmb.rocks": {
+        "nc_path": "/var/www/nextcloud.zmb.rocks",
+        "nc_php_version": "7.4",
+        "nc_www_user": "web001"
+    },
+    "nextcloud.bashclub.org": {
+        "nc_path": "/var/www/nextcloud.bashclub.org",
+        "nc_php_version": "8.0",
+        "nc_www_user": "web001"
+    }
+}
+```
