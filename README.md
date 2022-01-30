@@ -1,5 +1,6 @@
 # check-nextcloud
-CheckMK local check plugin to check Nextcloud installations
+CheckMK local check plugin to check Nextcloud installations.
+Multiple instances or checks inside docker containers are supported.
 
 Install it into /usr/lib/check_mk_agent/local/ your Nextcloud Host
 ```
@@ -18,10 +19,9 @@ After running once, the script will create the config file `/etc/check_mk/nextco
     }
 }
 ```
-Please adjust the settings to your needs.
-You can also add multiple instances.
 
-Example config with multiple instances (e.g. on ISPconfig):
+
+### Multiple instances example
 ```
 {
     "nextcloud.zmb.rocks": {
@@ -33,6 +33,17 @@ Example config with multiple instances (e.g. on ISPconfig):
         "nc_path": "/var/www/nextcloud.bashclub.org",
         "nc_php_version": "8.0",
         "nc_www_user": "web001"
+    }
+}
+```
+### Docker example:
+```
+{
+    "nextcloud.zmb.rocks": {
+        "nc_path": "/var/www/html",
+        "nc_php_version": "",
+        "nc_www_user": "www-data",
+        "docker_container": "composestack-nextcloud-fpm"
     }
 }
 ```
