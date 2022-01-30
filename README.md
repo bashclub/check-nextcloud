@@ -4,7 +4,7 @@ CheckMK local check plugin to check Nextcloud installations
 Install it into /usr/lib/check_mk_agent/local/ your Nextcloud Host
 ```
 wget -O /usr/lib/check_mk_agent/local/check-nextcloud https://raw.githubusercontent.com/bashclub/check-nextcloud/main/check-nextcloud
-chmod +X /usr/lib/check_mk_agent/local/check-nextcloud
+chmod +x /usr/lib/check_mk_agent/local/check-nextcloud
 /usr/lib/check_mk_agent/local/check-nextcloud
 ```
 
