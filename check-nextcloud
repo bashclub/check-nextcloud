@@ -39,7 +39,10 @@ def check_nextcloud(name:str, conf:dict):
     
 
 def update_check(conf:dict):
-    result = occ("update:check", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'])
+    if 'docker_container' in conf.keys() and (conf['docker_container'] != None or conf['docker_container'] != ""):
+        result = occ("update:check", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'], docker_container=conf['docker_container'])
+    else:
+        result = occ("update:check", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'])
 
     if len(result.split('\n')) > 2:
         updates = "Updates: " + " ".join(map(lambda x: "{0}:{1}".format(*x),re.findall("(\w+)(?:\sto version)?\s([\d+.]+) is available",result)))
@@ -51,7 +54,10 @@ def update_check(conf:dict):
     return f"updates={count};;1;; {updates}"
 
 def status(conf:dict):
-    result = json.loads(occ("status", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'], output="json"))
+    if 'docker_container' in conf.keys() and (conf['docker_container'] != None or conf['docker_container'] != ""):
+        result = occ("status", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'], output="json", docker_container=conf['docker_container'])
+    else:
+        result = json.loads(occ("status", conf['nc_www_user'],conf['nc_path'], conf['nc_php_version'], output="json"))
     if result.get('installed') == False:
         state = 2
     elif ('maintenance' in result.keys() and result.get('maintenance') == True) or ('needsDbUpgrade' in result.keys() and result.get('needsDbUpgrade') == True):
@@ -63,11 +69,16 @@ def status(conf:dict):
 def printout(name:str,function:str, result:str):
     print(f'P "Nextcloud {name} {function}" {result}')
 
-def occ (command:str, nc_www_user:str, nc_path:str, nc_php_version:str="", output:str="", return_stderr:bool=False):
-    cmd = f"sudo --user={nc_www_user} php{nc_php_version} occ {command}"
+def occ (command:str, nc_www_user:str, nc_path:str, nc_php_version:str="", output:str="", return_stderr:bool=False, docker_container:str=None):
+    if docker_container != None:
+        cmd = f"docker exec --user {nc_www_user} --workdir {nc_path} {docker_container} php{nc_php_version} occ {command}"
+    else:
+        cmd = f"sudo --user={nc_www_user} php{nc_php_version} occ {command}"
+
     if output != "":
         cmd = cmd + f" --output {output}"
-    _proc = subprocess.Popen([ cmd ], shell=True, cwd=nc_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    _proc = subprocess.Popen([ cmd ], shell=True, cwd=nc_path if docker_container != None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = _proc.communicate()
     if (stderr):
