@@ -4,9 +4,11 @@ Multiple instances or checks inside docker containers are supported.
 
 Install it into /usr/lib/check_mk_agent/local/ your Nextcloud Host
 ```
-wget -O /usr/lib/check_mk_agent/local/check-nextcloud https://raw.githubusercontent.com/bashclub/check-nextcloud/main/check-nextcloud
-chmod +x /usr/lib/check_mk_agent/local/check-nextcloud
-/usr/lib/check_mk_agent/local/check-nextcloud
+interval=3600
+mkdir -p /usr/lib/check_mk_agent/local/$interval
+wget -O /usr/lib/check_mk_agent/local/$interval/check-nextcloud https://raw.githubusercontent.com/bashclub/check-nextcloud/main/check-nextcloud
+chmod +x /usr/lib/check_mk_agent/local/$interval/check-nextcloud
+/usr/lib/check_mk_agent/local/$interval/check-nextcloud
 ```
 
 After running once, the script will create the config file `/etc/check_mk/nextcoud.conf` with default settings (JSON Format):
