@@ -51,7 +51,7 @@ def update_check(conf:dict):
         updates = result
         count = 0
     
-    return f"updates={count};;1;; {updates}"
+    return f"updates={count};;1;; {updates.strip()}"
 
 def status(conf:dict):
     if 'docker_container' in conf.keys() and (conf['docker_container'] != None or conf['docker_container'] != ""):
