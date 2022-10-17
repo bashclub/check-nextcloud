@@ -11,7 +11,7 @@ chmod +x /usr/lib/check_mk_agent/local/$interval/check-nextcloud
 /usr/lib/check_mk_agent/local/$interval/check-nextcloud
 ```
 
-After running once, the script will create the config file `/etc/check_mk/nextcoud.conf` with default settings (JSON Format):
+After running once, the script will create the config file `/etc/check_mk/nextcloud.conf` with default settings (JSON Format):
 ```
 {
     "nextcloud.zmb.rocks": {
