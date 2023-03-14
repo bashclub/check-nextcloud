@@ -49,3 +49,7 @@ After running once, the script will create the config file `/etc/check_mk/nextcl
     }
 }
 ```
+
+ Author
+### Thorsten Spille
+[<img src="https://storage.ko-fi.com/cdn/brandasset/kofi_s_tag_dark.png" rel="Support me on Ko-Fi">](https://ko-fi.com/thorakel)
