@@ -27,7 +27,7 @@ from sys import stderr
 
 nc_config = {
     "nextcloud.zmb.rocks": {
-        "nc_php_version": "8.0",
+        "nc_php_version": "8.2",
         "nc_www_user": "www-data",
         "nc_path": "/var/www/nextcloud"
         }
